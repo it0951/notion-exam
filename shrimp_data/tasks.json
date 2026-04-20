@@ -1,0 +1,149 @@
+{
+  "tasks": [
+    {
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Phase 1: 프로젝트 초기 설정",
+      "description": "@notionhq/client 패키지 설치, .env.local 파일 생성(NOTION_API_KEY, NOTION_DATABASE_ID), Notion Integration 생성 및 DB 연결, Notion DB 스키마 구성(Title, Category, Tags, Published, Status), lib/notion.ts Notion 클라이언트 싱글톤 초기화.",
+      "notes": "완료 기준: lib/notion.ts에서 notion.databases.retrieve() 호출 시 에러 없이 응답 반환. .env.local의 두 환경변수가 Next.js 서버에서 정상 로드됨.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-04-20T00:00:00.000Z",
+      "updatedAt": "2026-04-20T00:00:00.000Z",
+      "relatedFiles": [
+        {
+          "path": "lib/notion.ts",
+          "type": "CREATE",
+          "description": "Notion 클라이언트 싱글톤"
+        },
+        {
+          "path": ".env.local",
+          "type": "CREATE",
+          "description": "NOTION_API_KEY, NOTION_DATABASE_ID"
+        },
+        {
+          "path": "package.json",
+          "type": "TO_MODIFY",
+          "description": "@notionhq/client 의존성 추가"
+        }
+      ],
+      "implementationGuide": "1. npm install @notionhq/client\n2. .env.local 생성: NOTION_API_KEY=secret_xxxx, NOTION_DATABASE_ID=xxxx\n3. Notion Developers에서 Integration 생성 후 DB에 Share\n4. Notion DB에 Title(제목), Category(Select), Tags(Multi-select), Published(Date), Status(Select) 속성 생성\n5. lib/notion.ts 작성: Client 싱글톤 + DATABASE_ID export",
+      "verificationCriteria": "npm run dev 실행 후 notion.databases.retrieve() 에러 없음. .env.local 두 환경변수 정상 로드."
+    },
+    {
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Phase 2: 공통 모듈 및 타입 개발",
+      "description": "lib/notion.ts에 getPosts()(Status=발행됨, 최신순), getPageBlocks(pageId) 구현. types/notion.ts에 NotionPost, NotionBlock 타입 정의. parsePost 파서 함수. Navbar 업데이트(로고 홈 링크 + 반응형 골격), Footer 정비.",
+      "notes": "완료 기준: getPosts() 결과가 NotionPost[]로 타입 오류 없이 반환. getPageBlocks() 결과가 NotionBlock[]로 반환. Navbar·Footer가 모든 페이지에 공통 노출.",
+      "status": "pending",
+      "dependencies": [{ "taskId": "a1b2c3d4-0001-4000-8000-000000000001" }],
+      "createdAt": "2026-04-20T00:00:00.000Z",
+      "updatedAt": "2026-04-20T00:00:00.000Z",
+      "relatedFiles": [
+        {
+          "path": "lib/notion.ts",
+          "type": "TO_MODIFY",
+          "description": "getPosts, getPageBlocks 추가"
+        },
+        {
+          "path": "types/notion.ts",
+          "type": "CREATE",
+          "description": "NotionPost, NotionBlock 타입"
+        },
+        {
+          "path": "components/layout/navbar.tsx",
+          "type": "TO_MODIFY",
+          "description": "로고 홈 링크 업데이트"
+        }
+      ],
+      "implementationGuide": "1. types/notion.ts: NotionPost(id,title,category,tags,published,status), NotionBlock(id,type,content,children) 정의\n2. lib/notion.ts: getPosts() — databases.query filter Status=발행됨, sorts Published descending\n3. lib/notion.ts: getPageBlocks(pageId) — blocks.children.list\n4. lib/notion.ts: parsePost(page) — PageObjectResponse → NotionPost 변환\n5. Navbar: 로고 클릭 시 / 이동",
+      "verificationCriteria": "TypeScript 컴파일 에러 없음. getPosts(), getPageBlocks() 정상 호출 확인."
+    },
+    {
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "name": "Phase 3: 핵심 기능 개발 (글 목록 + 글 상세)",
+      "description": "글 목록: app/page.tsx를 서버 컴포넌트로 교체(getPosts + revalidate=3600), PostCard.tsx(제목/카테고리 배지/발행일/태그), PostList.tsx(클라이언트, 카드 그리드, 반응형). 글 상세: app/posts/[id]/page.tsx(서버 컴포넌트, 병렬 호출), BlockRenderer.tsx(paragraph/heading_1~3/bulleted_list_item/numbered_list_item/code/quote/image/divider), 홈 복귀 링크.",
+      "notes": "완료 기준: 홈에서 발행된 글 카드 렌더링. 카드 클릭 → /posts/[id] 본문 블록 정상 렌더링. 모바일(375px)/태블릿(768px)/데스크탑(1280px) 정상 동작.",
+      "status": "pending",
+      "dependencies": [{ "taskId": "a1b2c3d4-0002-4000-8000-000000000002" }],
+      "createdAt": "2026-04-20T00:00:00.000Z",
+      "updatedAt": "2026-04-20T00:00:00.000Z",
+      "relatedFiles": [
+        {
+          "path": "app/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "서버 컴포넌트로 교체"
+        },
+        {
+          "path": "app/posts/[id]/page.tsx",
+          "type": "CREATE",
+          "description": "글 상세 서버 컴포넌트"
+        },
+        {
+          "path": "components/PostCard.tsx",
+          "type": "CREATE",
+          "description": "글 카드 UI"
+        },
+        {
+          "path": "components/PostList.tsx",
+          "type": "CREATE",
+          "description": "글 목록 클라이언트 컴포넌트"
+        },
+        {
+          "path": "components/BlockRenderer.tsx",
+          "type": "CREATE",
+          "description": "Notion 블록 렌더러"
+        }
+      ],
+      "implementationGuide": "1. app/page.tsx: 서버 컴포넌트, export const revalidate=3600, getPosts() 호출 후 PostList에 전달\n2. PostCard.tsx: Card, Badge, 발행일 포맷(toLocaleDateString), 태그 목록\n3. PostList.tsx: 'use client', 카드 그리드(grid-cols-1 sm:grid-cols-2 lg:grid-cols-3)\n4. app/posts/[id]/page.tsx: Promise.all([notion.pages.retrieve, getPageBlocks]), params await 필수(Next.js 16)\n5. BlockRenderer.tsx: 블록 타입별 switch, code는 <pre><code>, image는 next/image",
+      "verificationCriteria": "홈 글 목록 렌더링 확인. 카드 클릭 상세 페이지 이동 확인. 반응형 3 breakpoint 정상."
+    },
+    {
+      "id": "a1b2c3d4-0004-4000-8000-000000000004",
+      "name": "Phase 4: 추가 기능 개발 (필터·검색·SEO)",
+      "description": "카테고리 필터(PostList에 탭 UI, 전체+동적 카테고리, 클라이언트 필터). 검색(shadcn Input, 제목 기준 실시간, useState+디바운스, AND 조합). SEO(layout.tsx 기본 metadata, posts/[id] generateMetadata).",
+      "notes": "완료 기준: 카테고리 탭 클릭 필터링 + 전체 초기화. 검색어 실시간 필터. 두 조건 AND 조합. /posts/[id] <title>에 글 제목 반영.",
+      "status": "pending",
+      "dependencies": [{ "taskId": "a1b2c3d4-0003-4000-8000-000000000003" }],
+      "createdAt": "2026-04-20T00:00:00.000Z",
+      "updatedAt": "2026-04-20T00:00:00.000Z",
+      "relatedFiles": [
+        {
+          "path": "components/PostList.tsx",
+          "type": "TO_MODIFY",
+          "description": "카테고리 탭 + 검색창 추가"
+        },
+        {
+          "path": "app/layout.tsx",
+          "type": "TO_MODIFY",
+          "description": "기본 metadata 설정"
+        },
+        {
+          "path": "app/posts/[id]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "generateMetadata 추가"
+        }
+      ],
+      "implementationGuide": "1. PostList.tsx: posts에서 카테고리 중복 제거 → 탭 목록 동적 생성\n2. 검색: useDebounce(usehooks-ts) 또는 직접 setTimeout으로 디바운스 300ms\n3. 필터 로직: filteredPosts = posts.filter(p => (tab==='전체'||p.category===tab) && title.includes(search))\n4. layout.tsx: metadata.title='노션 Claude를 다루는 기술', metadata.description 설정\n5. generateMetadata: notion.pages.retrieve로 제목 추출 후 반환",
+      "verificationCriteria": "카테고리+검색 AND 필터 동작. SEO title 태그 확인(브라우저 탭)."
+    },
+    {
+      "id": "a1b2c3d4-0005-4000-8000-000000000005",
+      "name": "Phase 5: 최적화 및 Vercel 배포",
+      "description": "next/image로 Notion 이미지 최적화(next.config.ts 도메인 허용). ISR revalidate 검토. npm run build 오류 0건, lint 경고 해소. 반응형 최종 점검(모바일 카드, 검색창, 카테고리 탭, 코드 블록 수평 스크롤). Vercel 배포(GitHub 연결, 환경변수 설정, 프로덕션 검증).",
+      "notes": "완료 기준: Vercel URL에서 F001~F004, F010, F011 전체 동작. Lighthouse 성능 70점 이상(모바일). 빌드/TypeScript 오류 0건.",
+      "status": "pending",
+      "dependencies": [{ "taskId": "a1b2c3d4-0004-4000-8000-000000000004" }],
+      "createdAt": "2026-04-20T00:00:00.000Z",
+      "updatedAt": "2026-04-20T00:00:00.000Z",
+      "relatedFiles": [
+        {
+          "path": "next.config.ts",
+          "type": "TO_MODIFY",
+          "description": "이미지 도메인 허용 추가"
+        }
+      ],
+      "implementationGuide": "1. next.config.ts: images.remotePatterns에 prod.files.statics.cdn.so(Notion CDN) 추가\n2. npm run build → 오류 확인 및 수정\n3. npm run lint → 경고 해소\n4. Playwright로 모바일/태블릿/데스크탑 반응형 스크린샷 확인\n5. Vercel 대시보드: GitHub 저장소 연결, NOTION_API_KEY + NOTION_DATABASE_ID 환경변수 등록\n6. 배포 후 홈→필터→검색→상세→홈 복귀 전체 여정 검증",
+      "verificationCriteria": "Vercel 프로덕션 URL 전체 기능 정상. Lighthouse 모바일 70점 이상. 빌드 오류 0건."
+    }
+  ]
+}
